@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     private bool gravityKeyHeld = false;
     private float movementX;
     private float movementY;
+    public bool inZMovementZone = false;
     private GravityDirection currentGravity = GravityDirection.Down;
 
     void Start()
@@ -68,27 +69,25 @@ public class PlayerController : MonoBehaviour
     }
 
     void Update()
-{
-    if (gravityKeyHeld)
     {
-        if (Keyboard.current.upArrowKey.wasPressedThisFrame)    GravityController.Instance.SetGravity(GravityDirection.Up);
-        if (Keyboard.current.downArrowKey.wasPressedThisFrame)  GravityController.Instance.SetGravity(GravityDirection.Down);
-        if (Keyboard.current.leftArrowKey.wasPressedThisFrame)  GravityController.Instance.SetGravity(GravityDirection.Left);
-        if (Keyboard.current.rightArrowKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.Right);
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)      GravityController.Instance.SetGravity(GravityDirection.None);
+        if (gravityKeyHeld)
+        {
+            if (Keyboard.current.upArrowKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.Up);
+            if (Keyboard.current.downArrowKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.Down);
+            if (Keyboard.current.leftArrowKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.Left);
+            if (Keyboard.current.rightArrowKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.Right);
+            if (Keyboard.current.spaceKey.wasPressedThisFrame) GravityController.Instance.SetGravity(GravityDirection.None);
+        }
     }
-}
 
     void FixedUpdate()
     {
         Vector3 movement = currentGravity switch
         {
-            GravityDirection.Down => new Vector3(movementX, 0f, 0f),
-            GravityDirection.Up => new Vector3(movementX, 0f, 0f),
-            GravityDirection.Left => new Vector3(0f, -movementX, 0f),
-            GravityDirection.Right => new Vector3(0f, movementX, 0f),
-
-            // Free float: X input moves horizontally, Y input moves vertically
+            GravityDirection.Down => new Vector3(movementX, 0f, inZMovementZone ? movementY : 0f),
+            GravityDirection.Up => new Vector3(movementX, 0f, inZMovementZone ? movementY : 0f),
+            GravityDirection.Left => new Vector3(0f, -movementX, inZMovementZone ? movementY : 0f),
+            GravityDirection.Right => new Vector3(0f, movementX, inZMovementZone ? movementY : 0f),
             GravityDirection.None => new Vector3(movementX, movementY, 0f),
             _ => new Vector3(movementX, 0f, 0f),
         };

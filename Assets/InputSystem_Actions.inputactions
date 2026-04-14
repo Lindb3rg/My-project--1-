@@ -82,19 +82,19 @@
                     "name": "Sprint",
                     "type": "Button",
                     "id": "641cd816-40e6-41b4-8c3d-04687c349290",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Gravity",
-                    "type": "Value",
-                    "id": "6751950d-2318-4c56-b636-d49579fcb53e",
+                    "name": "ToggleArm",
+                    "type": "Button",
+                    "id": "4e626e60-af6b-453d-8f29-f18fabd73b09",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -365,7 +365,7 @@
                 {
                     "name": "",
                     "id": "8cbb2f4b-a784-49cc-8d5e-c010b8c7f4e6",
-                    "path": "<Gamepad>/leftStickPress",
+                    "path": "<DualShockGamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -485,12 +485,12 @@
                 },
                 {
                     "name": "",
-                    "id": "52e5d511-3156-4fb2-83b8-b7d91d5f80ba",
-                    "path": "<Keyboard>/g",
+                    "id": "049613cb-bf7a-4c94-ad4a-91d6da9af06e",
+                    "path": "<DualShockGamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Gravity",
+                    "groups": "",
+                    "action": "ToggleArm",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

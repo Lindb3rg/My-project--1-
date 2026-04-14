@@ -9,8 +9,8 @@ public class ZMovementZone : MonoBehaviour
             Rigidbody rb = other.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                // Bitwise AND with NOT removes the specific constraint
                 rb.constraints &= ~RigidbodyConstraints.FreezePositionZ;
+                other.GetComponent<PlayerController>().inZMovementZone = true;
             }
         }
     }
@@ -22,8 +22,8 @@ public class ZMovementZone : MonoBehaviour
             Rigidbody rb = other.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                // Bitwise OR adds the constraint back
                 rb.constraints |= RigidbodyConstraints.FreezePositionZ;
+                other.GetComponent<PlayerController>().inZMovementZone = false;
             }
         }
     }
