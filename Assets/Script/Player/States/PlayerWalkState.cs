@@ -1,15 +1,16 @@
-
 using UnityEngine;
 
 public class PlayerWalkState : PlayerGroundedState
-{   
-    public PlayerWalkState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key, ctx) { }
+{
+    public PlayerWalkState(PlayerStateMachine.EPlayerState key, PlayerContext ctx) : base(key, ctx) { }
+
     public override void EnterState()
     {
         _ctx.Anim.SetBool("inAir", false);
         _ctx.Anim.SetBool("isWalking", true);
         _ctx.Anim.SetBool("isRunning", false);
         _ctx.Anim.SetBool("isSprinting", false);
+        Debug.Log("We entered Walk state");
     }
 
     public override void ExitState()
@@ -19,18 +20,7 @@ public class PlayerWalkState : PlayerGroundedState
 
     public override void UpdateState()
     {
-        if (CheckSharedTransitions()) return;
-
-        float magnitude = Mathf.Abs(_ctx.MoveInput.x);
-        if (magnitude > 0.8f)
-        {
-            _ctx.TransitionToState(_ctx.SprintHeld
-                ? PlayerStateMachine.EPlayerState.Sprint
-                : PlayerStateMachine.EPlayerState.Run);
-            return;
-        }
-
-        _ctx.HandleTurning();
+        _ctx.Anim.SetBool("isWalking", true);
     }
 
     public override void FixedUpdateState()
@@ -46,7 +36,20 @@ public class PlayerWalkState : PlayerGroundedState
             _ctx.Rb.linearVelocity.y,
             0f
         );
+        Debug.Log($"FacingDirection: {_ctx.FacingDirection}, WalkSpeed: {_ctx.WalkSpeed}, IsPushingIntoWall: {IsPushingIntoWall}");
     }
 
-    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+    public override PlayerStateMachine.EPlayerState GetNextState()
+    {
+        var shared = GetSharedNextState();
+        if (!shared.Equals(StateKey)) return shared;
+
+        float magnitude = Mathf.Abs(_ctx.MoveInput.x);
+        if (magnitude > 0.8f)
+            return _ctx.SprintHeld
+                ? PlayerStateMachine.EPlayerState.Sprint
+                : PlayerStateMachine.EPlayerState.Run;
+
+        return StateKey;
+    }
 }

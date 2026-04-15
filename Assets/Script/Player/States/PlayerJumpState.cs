@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class PlayerJumpState : BaseState<PlayerStateMachine.EPlayerState>
 {
-    private readonly PlayerStateMachine _ctx;
+    private readonly PlayerContext _ctx;
 
-    public PlayerJumpState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key)
+    public PlayerJumpState(PlayerStateMachine.EPlayerState key, PlayerContext ctx) : base(key)
     {
         _ctx = ctx;
     }
 
     public override void EnterState()
     {
+        Debug.Log("We entered Jump state");
         _ctx.CoyoteTimeCounter = 0f;
         _ctx.Anim.SetTrigger("Jump");
         _ctx.Anim.SetBool("inAir",      true);
@@ -23,15 +24,7 @@ public class PlayerJumpState : BaseState<PlayerStateMachine.EPlayerState>
     }
 
     public override void ExitState() { }
-
-    public override void UpdateState()
-    {
-        if (_ctx.Rb.linearVelocity.y < 0)
-        {
-            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Fall);
-            return;
-        }
-    }
+    public override void UpdateState() { }
 
     public override void FixedUpdateState()
     {
@@ -44,19 +37,6 @@ public class PlayerJumpState : BaseState<PlayerStateMachine.EPlayerState>
             );
         }
 
-        ApplyHorizontalMomentum();
-    }
-
-    public override void LateUpdateState() { }
-
-    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
-
-    public override void OnTriggerEnter(Collider other) { }
-    public override void OnTriggerStay(Collider other)  { }
-    public override void OnTriggerExit(Collider other)  { }
-
-    private void ApplyHorizontalMomentum()
-    {
         if (_ctx.MoveInput.x != 0)
         {
             float targetSpeed = _ctx.FacingDirection * _ctx.RunSpeed * 0.8f;
@@ -69,4 +49,18 @@ public class PlayerJumpState : BaseState<PlayerStateMachine.EPlayerState>
             );
         }
     }
+
+    public override void LateUpdateState() { }
+
+    public override PlayerStateMachine.EPlayerState GetNextState()
+    {
+        if (_ctx.Rb.linearVelocity.y < 0)
+            return PlayerStateMachine.EPlayerState.Fall;
+
+        return StateKey;
+    }
+
+    public override void OnTriggerEnter(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }

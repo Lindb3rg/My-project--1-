@@ -19,6 +19,11 @@ public abstract class StateManager<EState> : MonoBehaviour where EState : Enum
     protected virtual void Update()
     {
         EState nextStateKey = CurrentState.GetNextState();
+        if (CurrentState == null)
+        {
+            Debug.LogError("CurrentState is null!");
+            return;
+        }
         if (nextStateKey.Equals(CurrentState.StateKey))
         {
             CurrentState.UpdateState();
@@ -29,8 +34,8 @@ public abstract class StateManager<EState> : MonoBehaviour where EState : Enum
             TransitionToState(nextStateKey);
         }
     }
-    protected virtual void FixedUpdate(){}
-    protected virtual void LateUpdate(){}
+    protected virtual void FixedUpdate() => CurrentState?.FixedUpdateState();
+    protected virtual void LateUpdate() => CurrentState?.LateUpdateState();
 
     public void TransitionToState(EState stateKey)
     {

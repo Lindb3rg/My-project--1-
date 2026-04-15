@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 {
-    private readonly PlayerStateMachine _ctx;
+    private readonly PlayerContext _ctx;
 
     private bool _canDoubleJump;
     private bool _didDoubleJump;
     public bool DidDoubleJump => _didDoubleJump;
 
-    public PlayerFallState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key)
+    public PlayerFallState(PlayerStateMachine.EPlayerState key, PlayerContext ctx) : base(key)
     {
         _ctx = ctx;
     }
@@ -18,6 +18,7 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
         _canDoubleJump = true;
         _didDoubleJump = false;
         _ctx.Anim.SetBool("inAir", true);
+        Debug.Log("We entered Fall state");
     }
 
     public override void ExitState()
@@ -27,12 +28,6 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
     public override void UpdateState()
     {
-        if (_ctx.TouchesWall && _ctx.EdgeDetected)
-        {
-            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.EdgeClimb);
-            return;
-        }
-
         if (_ctx.JumpPressed && _canDoubleJump)
         {
             _ctx.Rb.linearVelocity = new Vector3(
@@ -42,15 +37,6 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
             );
             _canDoubleJump = false;
             _didDoubleJump = true;
-        }
-
-        _ctx.HandleTurning();
-
-        if (_ctx.IsGrounded && _ctx.Rb.linearVelocity.y >= -0.1f)
-        {
-            _ctx.TransitionToState(_ctx.MoveInput.x != 0
-                ? PlayerStateMachine.EPlayerState.Walk
-                : PlayerStateMachine.EPlayerState.Idle);
         }
     }
 
@@ -77,7 +63,20 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
     public override void LateUpdateState() { }
 
-    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+    public override PlayerStateMachine.EPlayerState GetNextState()
+    {
+        if (_ctx.TouchesWall && _ctx.EdgeDetected)
+            return PlayerStateMachine.EPlayerState.EdgeClimb;
+
+        if (_ctx.IsGrounded && _ctx.Rb.linearVelocity.y >= -0.1f)
+            return _didDoubleJump
+                ? PlayerStateMachine.EPlayerState.Land
+                : (_ctx.MoveInput.x != 0
+                    ? PlayerStateMachine.EPlayerState.Walk
+                    : PlayerStateMachine.EPlayerState.Idle);
+
+        return StateKey;
+    }
 
     public override void OnTriggerEnter(Collider other) { }
     public override void OnTriggerStay(Collider other)  { }

@@ -1,7 +1,8 @@
 using UnityEngine;
+
 public class PlayerSprintState : PlayerGroundedState
 {
-    public PlayerSprintState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key, ctx) { }
+    public PlayerSprintState(PlayerStateMachine.EPlayerState key, PlayerContext ctx) : base(key, ctx) { }
 
     public override void EnterState()
     {
@@ -9,35 +10,19 @@ public class PlayerSprintState : PlayerGroundedState
         _ctx.Anim.SetBool("isSprinting", true);
         _ctx.Anim.SetBool("isRunning", true);
         _ctx.Anim.SetBool("isWalking", false);
+        Debug.Log("We entered Sprint state");
     }
 
     public override void ExitState()
     {
         _ctx.Anim.SetBool("isSprinting", false);
-        _ctx.Anim.SetBool("isRunning", false);
+        _ctx.Anim.SetBool("isRunning",   false);
     }
 
     public override void UpdateState()
     {
-        if (CheckSharedTransitions()) return;
-
-        float magnitude = Mathf.Abs(_ctx.MoveInput.x);
-
-        if (!_ctx.SprintHeld)
-        {
-            _ctx.TransitionToState(magnitude > 0.8f
-                ? PlayerStateMachine.EPlayerState.Run
-                : PlayerStateMachine.EPlayerState.Walk);
-            return;
-        }
-
-        if (magnitude <= 0.8f)
-        {
-            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Walk);
-            return;
-        }
-
-        _ctx.HandleTurning();
+        _ctx.Anim.SetBool("isSprinting", true);
+        _ctx.Anim.SetBool("isRunning",   true);
     }
 
     public override void FixedUpdateState()
@@ -55,5 +40,21 @@ public class PlayerSprintState : PlayerGroundedState
         );
     }
 
-    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+    public override PlayerStateMachine.EPlayerState GetNextState()
+    {
+        var shared = GetSharedNextState();
+        if (!shared.Equals(StateKey)) return shared;
+
+        float magnitude = Mathf.Abs(_ctx.MoveInput.x);
+
+        if (!_ctx.SprintHeld)
+            return magnitude > 0.8f
+                ? PlayerStateMachine.EPlayerState.Run
+                : PlayerStateMachine.EPlayerState.Walk;
+
+        if (magnitude <= 0.8f)
+            return PlayerStateMachine.EPlayerState.Walk;
+
+        return StateKey;
+    }
 }

@@ -30,6 +30,9 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
     public Rigidbody Rb { get; private set; }
     public Animator Anim { get; private set; }
 
+    // Logging
+    public bool UseLogs = true;
+
     protected override void Awake()
     {
         base.Awake();
@@ -93,32 +96,6 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
         Anim.SetBool("edgeDetected", EdgeDetected);
     }
 
-    public virtual void HandleTurning()
-    {
-        bool wantsToTurn = (MoveInput.x > 0f && FacingDirection == -1)
-                        || (MoveInput.x < 0f && FacingDirection == 1);
-
-        if (!wantsToTurn) return;
-
-        if (MoveInput.x > 0f)
-        {
-            transform.rotation = Quaternion.Euler(0, 90, 0);
-            FacingDirection = 1;
-        }
-        else
-        {
-            transform.rotation = Quaternion.Euler(0, -90, 0);
-            FacingDirection = -1;
-        }
-
-        if (FrontCheck != null)
-        {
-            Vector3 pos = FrontCheck.localPosition;
-            pos.x = Mathf.Abs(pos.x) * FacingDirection;
-            FrontCheck.localPosition = pos;
-        }
-    }
-
     private void OnDrawGizmos()
     {
         if (GroundCheck != null)
@@ -135,5 +112,20 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
             Gizmos.DrawWireCube(Vector3.zero, FrontCheckSize);
             Gizmos.matrix = Matrix4x4.identity;
         }
+    }
+    protected override void FixedUpdate()
+    {
+        base.FixedUpdate();
+    }
+
+    protected override void LateUpdate()
+    {
+        base.LateUpdate();
+    }
+
+    public void Log(string message)
+    {
+        if (UseLogs)
+            Debug.Log(message);
     }
 }

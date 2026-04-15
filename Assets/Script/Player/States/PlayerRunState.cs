@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerRunState : PlayerGroundedState
 {
-    public PlayerRunState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key, ctx) { }
+    public PlayerRunState(PlayerStateMachine.EPlayerState key, PlayerContext ctx) : base(key, ctx) { }
 
     public override void EnterState()
     {
@@ -10,6 +10,7 @@ public class PlayerRunState : PlayerGroundedState
         _ctx.Anim.SetBool("isRunning", true);
         _ctx.Anim.SetBool("isWalking", false);
         _ctx.Anim.SetBool("isSprinting", false);
+        Debug.Log("We entered Run state");
     }
 
     public override void ExitState()
@@ -19,23 +20,7 @@ public class PlayerRunState : PlayerGroundedState
 
     public override void UpdateState()
     {
-        if (CheckSharedTransitions()) return;
-
-        float magnitude = Mathf.Abs(_ctx.MoveInput.x);
-
-        if (magnitude <= 0.8f)
-        {
-            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Walk);
-            return;
-        }
-
-        if (_ctx.SprintHeld)
-        {
-            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Sprint);
-            return;
-        }
-
-        _ctx.HandleTurning();
+        _ctx.Anim.SetBool("isRunning", true);
     }
 
     public override void FixedUpdateState()
@@ -53,5 +38,17 @@ public class PlayerRunState : PlayerGroundedState
         );
     }
 
-    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+    public override PlayerStateMachine.EPlayerState GetNextState()
+    {
+        var shared = GetSharedNextState();
+        if (!shared.Equals(StateKey)) return shared;
+
+        if (_ctx.SprintHeld && Mathf.Abs(_ctx.MoveInput.x) > 0.8f)
+            return PlayerStateMachine.EPlayerState.Sprint;
+
+        if (Mathf.Abs(_ctx.MoveInput.x) <= 0.8f)
+            return PlayerStateMachine.EPlayerState.Walk;
+
+        return StateKey;
+    }
 }
