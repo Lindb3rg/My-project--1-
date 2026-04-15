@@ -1,49 +1,40 @@
 using UnityEngine;
 
-public class PlayerLandState : IState
+public class PlayerLandState : BaseState<PlayerStateMachine.EPlayerState>
 {
     private readonly PlayerStateMachine _ctx;
-    private readonly StateMachine _sm;
 
-    public PlayerLandState(PlayerStateMachine ctx, StateMachine sm)
+    public PlayerLandState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key)
     {
         _ctx = ctx;
-        _sm = sm;
     }
 
-    public void Enter()
+    public override void EnterState()
     {
-        // Play correct landing animation based on whether double jumped
-        Debug.Log("Entered Jump Land state");
-        if (_ctx.Air.DidDoubleJump)
-        {
+        if (_ctx.Fall.DidDoubleJump)
             _ctx.Anim.Play(PlayerAnimations.DoubleJumpLand);
-            _ctx.Rb.linearVelocity = new Vector3(
-            _ctx.FacingDirection * _ctx.RollSpeed,
-                0f,
-                0f
-            );
-
-
-        }
         else
-            _sm.ChangeState(_ctx.Idle);
+            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Idle);
     }
 
-    public void Exit() { }
+    public override void ExitState() { }
 
-    public void Tick()
+    public override void UpdateState()
     {
-        // Wait for animation to finish then transition
         if (_ctx.Anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f)
         {
-            if (_ctx.MoveInput.x != 0)
-                _sm.ChangeState(_ctx.Move);
-            else
-                _sm.ChangeState(_ctx.Idle);
+            _ctx.TransitionToState(_ctx.MoveInput.x != 0
+                ? PlayerStateMachine.EPlayerState.Walk
+                : PlayerStateMachine.EPlayerState.Idle);
         }
     }
 
-    public void FixedTick() { }
-    public void LateTick() { }
+    public override void FixedUpdateState() { }
+    public override void LateUpdateState()  { }
+
+    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+
+    public override void OnTriggerEnter(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }

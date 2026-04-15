@@ -1,44 +1,39 @@
 using UnityEngine;
 
-public class AntagonistRoarState : IState
+public class AntagonistRoarState : BaseState<AntagonistStateMachine.EAntagonistState>
 {
     private readonly AntagonistStateMachine _ctx;
-    private readonly StateMachine _sm;
 
 
 
-    public AntagonistRoarState(AntagonistStateMachine ctx, StateMachine sm)
+    public AntagonistRoarState(AntagonistStateMachine.EAntagonistState key, AntagonistStateMachine context) : base(key)
     {
-        _ctx = ctx;
-        _sm = sm;
+        _ctx = context;
     }
 
-    public void Enter()
+    public override void EnterState()
     {
 
         _ctx.Anim.SetTrigger("Roar");
     }
 
-    public void Exit() { }
+    public override void ExitState() { }
 
 
-
-
-
-
-    public void Tick()
+    public override void UpdateState()
     {
-        AnimatorStateInfo info = _ctx.Anim.GetCurrentAnimatorStateInfo(0);
-        if (info.IsName("Roar") && info.normalizedTime >= 1f)
-        {
-            _sm.ChangeState(_ctx.Idle);
-        }
     }
 
-    public void FixedTick()
+    public override void FixedUpdateState()
     {
 
 
     }
-    public void LateTick() { }
+    public override void LateUpdateState() { }
+
+    public override AntagonistStateMachine.EAntagonistState GetNextState() => StateKey;
+
+    public override void OnTriggerEnter(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }

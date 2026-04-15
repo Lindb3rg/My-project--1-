@@ -1,44 +1,39 @@
 using UnityEngine;
-public class PlayerJumpState : IState
+
+public class PlayerJumpState : BaseState<PlayerStateMachine.EPlayerState>
 {
     private readonly PlayerStateMachine _ctx;
-    private readonly StateMachine _sm;
 
-
-    public PlayerJumpState(PlayerStateMachine ctx, StateMachine sm)
+    public PlayerJumpState(PlayerStateMachine.EPlayerState key, PlayerStateMachine ctx) : base(key)
     {
         _ctx = ctx;
-        _sm = sm;
     }
 
-    public void Enter()
+    public override void EnterState()
     {
-        Debug.Log("Entered Jumpstate");
-        _ctx.CoyoteTimeCounter = 0f; // consume coyote time
+        _ctx.CoyoteTimeCounter = 0f;
         _ctx.Anim.SetTrigger("Jump");
-        _ctx.Anim.SetBool("inAir", true);
+        _ctx.Anim.SetBool("inAir",      true);
         _ctx.Anim.SetBool("isGrounded", false);
         _ctx.Rb.linearVelocity = new Vector3(
             _ctx.Rb.linearVelocity.x,
             _ctx.JumpForce,
             0f
         );
-
     }
 
-    public void Exit()
-    {
+    public override void ExitState() { }
 
-    }
-
-    public void Tick()
+    public override void UpdateState()
     {
-        // Once we start falling, hand off to AirState
         if (_ctx.Rb.linearVelocity.y < 0)
-            _sm.ChangeState(_ctx.Air);
+        {
+            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Fall);
+            return;
+        }
     }
 
-    public void FixedTick()
+    public override void FixedUpdateState()
     {
         if (!_ctx.JumpHeld && _ctx.Rb.linearVelocity.y > 0)
         {
@@ -49,19 +44,23 @@ public class PlayerJumpState : IState
             );
         }
 
-        // Momentum based horizontal movement
         ApplyHorizontalMomentum();
-
-
     }
-    public void LateTick() { }
+
+    public override void LateUpdateState() { }
+
+    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+
+    public override void OnTriggerEnter(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 
     private void ApplyHorizontalMomentum()
     {
         if (_ctx.MoveInput.x != 0)
         {
             float targetSpeed = _ctx.FacingDirection * _ctx.RunSpeed * 0.8f;
-            float currentX = _ctx.Rb.linearVelocity.x;
+            float currentX    = _ctx.Rb.linearVelocity.x;
 
             _ctx.Rb.linearVelocity = new Vector3(
                 Mathf.Lerp(currentX, targetSpeed, _ctx.AirAcceleration * _ctx.AirAccelerationMultiplier * Time.fixedDeltaTime),
@@ -70,5 +69,4 @@ public class PlayerJumpState : IState
             );
         }
     }
-     
 }

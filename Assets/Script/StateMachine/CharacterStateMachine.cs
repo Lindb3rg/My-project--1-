@@ -1,70 +1,69 @@
-// CharacterStateMachine.cs
+using System;
 using UnityEngine;
 
-public class CharacterStateMachine : MonoBehaviour
+public abstract class CharacterStateMachine<EState> : StateManager<EState> where EState : Enum
 {
-
-    //Ground check
+    // Ground check
+    [Header("Ground Check")]
     public float GroundCheckRadius = 0.2f;
     public float GroundCheckDistance = 0.5f;
     public LayerMask GroundLayer;
     public Transform GroundCheck;
-    public bool IsGrounded { get; protected set; }
+    public bool IsGrounded { get; private set; }
 
-    
-    
-    
-
-    // Front Check
-    public bool TouchesWall { get; protected set; }
+    // Front check
+    [Header("Front Check")]
     public Transform FrontCheck;
     public Vector3 FrontCheckSize = new Vector3(0.1f, 1.5f, 0.1f);
     public LayerMask EdgeLayer;
     public LayerMask WallLayer;
-    public bool EdgeDetected { get; protected set; }
-    public Vector3 EdgePosition { get; protected set; }
-    public bool DetectedWall { get; protected set; }
-
+    public bool TouchesWall { get; private set; }
+    public bool EdgeDetected { get; private set; }
+    public Vector3 EdgePosition { get; private set; }
 
     // Movement
     public Vector2 MoveInput { get; protected set; }
     public bool IsMoving => Mathf.Abs(MoveInput.x) > 0.1f;
-
-
-    public Rigidbody Rb { get; protected set; }
-    public Animator Anim { get; protected set; }
     public int FacingDirection { get; set; } = 1;
 
+    // Components
+    public Rigidbody Rb { get; private set; }
+    public Animator Anim { get; private set; }
 
-    protected StateMachine _sm;
-
-    protected virtual void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         Rb = GetComponent<Rigidbody>();
         Anim = GetComponent<Animator>();
     }
 
+    protected override void Update()
+    {
+        UpdateGroundCheck();
+        UpdateFrontCheck();
+        UpdateAnimatorParams();
+        base.Update();
+    }
 
-
-    protected virtual void Update()
+    private void UpdateGroundCheck()
     {
         IsGrounded = Physics.SphereCast(
             GroundCheck.position,
             GroundCheckRadius,
             Vector3.down,
-            out RaycastHit hit,
+            out RaycastHit _,
             GroundCheckDistance,
             GroundLayer
         );
+    }
 
-
-
-        
+    private void UpdateFrontCheck()
+    {
         Collider[] frontHits = Physics.OverlapBox(
-        FrontCheck.position,
-        FrontCheckSize / 2,
-        FrontCheck.rotation,
-        WallLayer | EdgeLayer
+            FrontCheck.position,
+            FrontCheckSize / 2,
+            FrontCheck.rotation,
+            WallLayer | EdgeLayer
         );
 
         TouchesWall = false;
@@ -85,23 +84,42 @@ public class CharacterStateMachine : MonoBehaviour
                 );
             }
         }
+    }
 
-
-
-
+    private void UpdateAnimatorParams()
+    {
         Anim.SetBool("isGrounded", IsGrounded);
         Anim.SetBool("touchesWall", TouchesWall);
         Anim.SetBool("edgeDetected", EdgeDetected);
-
-
-
     }
 
+    public virtual void HandleTurning()
+    {
+        bool wantsToTurn = (MoveInput.x > 0f && FacingDirection == -1)
+                        || (MoveInput.x < 0f && FacingDirection == 1);
 
+        if (!wantsToTurn) return;
 
-    protected virtual void FixedUpdate() => _sm?.FixedTick();
+        if (MoveInput.x > 0f)
+        {
+            transform.rotation = Quaternion.Euler(0, 90, 0);
+            FacingDirection = 1;
+        }
+        else
+        {
+            transform.rotation = Quaternion.Euler(0, -90, 0);
+            FacingDirection = -1;
+        }
 
-    void OnDrawGizmos()
+        if (FrontCheck != null)
+        {
+            Vector3 pos = FrontCheck.localPosition;
+            pos.x = Mathf.Abs(pos.x) * FacingDirection;
+            FrontCheck.localPosition = pos;
+        }
+    }
+
+    private void OnDrawGizmos()
     {
         if (GroundCheck != null)
         {
@@ -115,9 +133,7 @@ public class CharacterStateMachine : MonoBehaviour
             Gizmos.color = TouchesWall ? Color.blue : EdgeDetected ? Color.green : Color.cyan;
             Gizmos.matrix = Matrix4x4.TRS(FrontCheck.position, FrontCheck.rotation, Vector3.one);
             Gizmos.DrawWireCube(Vector3.zero, FrontCheckSize);
-            Gizmos.matrix = Matrix4x4.identity; // ← reset matrix after
+            Gizmos.matrix = Matrix4x4.identity;
         }
-
     }
-
 }

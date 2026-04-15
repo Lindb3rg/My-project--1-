@@ -1,84 +1,61 @@
 using UnityEngine;
 
-public class PlayerIdleState : IState
+public class PlayerIdleState : BaseState<PlayerStateMachine.EPlayerState>
 {
     private readonly PlayerStateMachine _ctx;
-    private readonly StateMachine _sm;
 
-    public PlayerIdleState(PlayerStateMachine ctx, StateMachine sm)
+    public PlayerIdleState(PlayerStateMachine.EPlayerState key, PlayerStateMachine context) : base(key)
     {
-        _ctx = ctx;
-        _sm = sm;
+        _ctx = context;
     }
 
-    public void Enter()
+    public override void EnterState()
     {
-
-        Debug.Log("Entered IdleState");
         _ctx.Anim.SetBool("inAir", false);
-        
-
-
-
     }
 
-    public void Exit()
+    public override void ExitState() { }
+
+    public override void UpdateState()
     {
-
-        
-
-    }
-
-
-
-
-    public void Tick()
-    {
-
-
-        if (_ctx.JumpPressed)
-        {
-            if (_ctx.CoyoteTimeCounter > 0f) _sm.ChangeState(_ctx.Jump);
-
-        }
-
-
-
-
-        if (_ctx.IsMoving)
-        {
-            bool movingAwayFromWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1 && _ctx.MoveInput.x < 0)
-                                   || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x > 0)
-                                   || !_ctx.TouchesWall;  // ← no wall, always free
-
-            if (movingAwayFromWall)
-                _sm.ChangeState(_ctx.Move);
-        }
-
-
-
-
-
         if (!_ctx.IsGrounded)
         {
             _ctx.Anim.SetTrigger("fallTrigger");
-            _sm.ChangeState(_ctx.Air);
+            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Fall);
             return;
         }
 
+        if (_ctx.JumpPressed && _ctx.CoyoteTimeCounter > 0f)
+        {
+            _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Jump);
+            return;
+        }
 
+        if (_ctx.IsMoving)
+        {
+            bool movingAwayFromWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1  && _ctx.MoveInput.x < 0)
+                                   || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x > 0)
+                                   || !_ctx.TouchesWall;
+
+            if (movingAwayFromWall)
+                _ctx.TransitionToState(PlayerStateMachine.EPlayerState.Walk);
+        }
     }
 
-    public void FixedTick()
+    public override void FixedUpdateState()
     {
-        if (_ctx.MoveInput.x < 0.1 || _ctx.MoveInput.x > -0.1)
+        if (Mathf.Abs(_ctx.MoveInput.x) < 0.1f)
             _ctx.Rb.linearVelocity = new Vector3(0f, _ctx.Rb.linearVelocity.y, 0f);
-
     }
-    public void LateTick()
-    {
 
-        _ctx.UpdateWallHandIK();
-    
-     }
+    public override void LateUpdateState()
+    {
+        
+    }
+
+    public override PlayerStateMachine.EPlayerState GetNextState() => StateKey;
+
+    public override void OnTriggerEnter(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }
