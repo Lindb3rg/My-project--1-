@@ -18,7 +18,9 @@ public abstract class StateManager<EState> : MonoBehaviour where EState : Enum
     }
     protected virtual void Update()
     {
+        
         EState nextStateKey = CurrentState.GetNextState();
+        Debug.Log($"CurrentState: {CurrentState.StateKey}, NextState: {nextStateKey}");
         if (CurrentState == null)
         {
             Debug.LogError("CurrentState is null!");

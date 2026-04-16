@@ -5,7 +5,7 @@ public class PlayerContext
     // Components
     public Rigidbody Rb { get; }
     public Animator Anim { get; }
-    public Transform Transform { get; }
+    public Transform Transform { get;}
     public Transform MeshChild { get; }
     public Transform GroundCheck { get; }
     public Transform FrontCheck { get; }

@@ -16,27 +16,27 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
     }
 
     [Header("Movement")]
-    public float WalkSpeed   = 3f;
-    public float RunSpeed    = 10f;
+    public float WalkSpeed = 3f;
+    public float RunSpeed = 10f;
     public float SprintSpeed = 15f;
-    public float TurnDelay   = 0.15f;
+    public float TurnDelay = 0.15f;
 
     [Header("Jumping")]
-    public float JumpForce                 = 5f;
-    public float DoubleJumpForce           = 6f;
-    public float FallMultiplier            = 2.5f;
-    public float LowJumpMultiplier         = 2f;
-    public float AirAcceleration           = 5f;
+    public float JumpForce = 5f;
+    public float DoubleJumpForce = 6f;
+    public float FallMultiplier = 2.5f;
+    public float LowJumpMultiplier = 2f;
+    public float AirAcceleration = 5f;
     public float AirAccelerationMultiplier = 1f;
-    public float CoyoteTime                = 0.1f;
+    public float CoyoteTime = 0.1f;
 
     [Header("Edge Climbing")]
     public float ClimbRepositionThreshold = 0.05f;
-    public float ClimbLedgeOffset         = 0.1f;
-    public float ClimbRepositionSpeed     = 10f;
+    public float ClimbLedgeOffset = 0.1f;
+    public float ClimbRepositionSpeed = 10f;
 
     [Header("Aiming")]
-    public float AimSpeed      = 30f;
+    public float AimSpeed = 30f;
     public float AimResetDelay = 1f;
     public float AimResetSpeed = 50f;
 
@@ -46,7 +46,7 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
 
     private InputSystem_Actions _input;
     private float _currentAimAngle = 0f;
-    private float _aimResetTimer   = 0f;
+    private float _aimResetTimer = 0f;
 
     private PlayerContext _context;
     public PlayerContext Context => _context;
@@ -57,7 +57,7 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
     {
         base.Awake();
 
-        _input       = new InputSystem_Actions();
+        _input = new InputSystem_Actions();
         _audioSource = GetComponent<AudioSource>();
 
         _context = new PlayerContext(
@@ -76,19 +76,19 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
             ClimbRepositionSpeed
         );
 
-        States[EPlayerState.Idle]      = new PlayerIdleState(EPlayerState.Idle,            _context);
-        States[EPlayerState.Walk]      = new PlayerWalkState(EPlayerState.Walk,            _context);
-        States[EPlayerState.Run]       = new PlayerRunState(EPlayerState.Run,              _context);
-        States[EPlayerState.Sprint]    = new PlayerSprintState(EPlayerState.Sprint,        _context);
-        States[EPlayerState.Jump]      = new PlayerJumpState(EPlayerState.Jump,            _context);
-        States[EPlayerState.Fall]      = new PlayerFallState(EPlayerState.Fall,            _context);
-        States[EPlayerState.Land]      = new PlayerLandState(EPlayerState.Land,            _context);
+        States[EPlayerState.Idle] = new PlayerIdleState(EPlayerState.Idle, _context);
+        States[EPlayerState.Walk] = new PlayerWalkState(EPlayerState.Walk, _context);
+        States[EPlayerState.Run] = new PlayerRunState(EPlayerState.Run, _context);
+        States[EPlayerState.Sprint] = new PlayerSprintState(EPlayerState.Sprint, _context);
+        States[EPlayerState.Jump] = new PlayerJumpState(EPlayerState.Jump, _context);
+        States[EPlayerState.Fall] = new PlayerFallState(EPlayerState.Fall, _context);
+        States[EPlayerState.Land] = new PlayerLandState(EPlayerState.Land, _context);
         States[EPlayerState.EdgeClimb] = new PlayerEdgeClimbState(EPlayerState.EdgeClimb, _context);
 
         CurrentState = States[EPlayerState.Idle];
     }
 
-    void OnEnable()  => _input.Player.Enable();
+    void OnEnable() => _input.Player.Enable();
     void OnDisable() => _input.Player.Disable();
 
     protected override void Update()
@@ -104,22 +104,23 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         base.LateUpdate();
         UpdateAim();
     }
-
     private void ReadInput()
     {
-        _context.MoveInput   = _input.Player.Move.ReadValue<Vector2>();
-        _context.AimInput    = _input.Player.Look.ReadValue<Vector2>();
-        _context.JumpHeld    = _input.Player.Jump.IsPressed();
+        Vector2 moveInput = _input.Player.Move.ReadValue<Vector2>();
+        _context.MoveInput = moveInput;
+        _context.MoveInput = _input.Player.Move.ReadValue<Vector2>();
+        _context.AimInput = _input.Player.Look.ReadValue<Vector2>();
+        _context.JumpHeld = _input.Player.Jump.IsPressed();
         _context.JumpPressed = _input.Player.Jump.WasPressedThisFrame();
-        _context.SprintHeld  = _input.Player.Sprint.IsPressed();
+        _context.SprintHeld = _input.Player.Sprint.IsPressed();
     }
 
     private void SyncContext()
     {
-        _context.IsGrounded      = IsGrounded;
-        _context.TouchesWall     = TouchesWall;
-        _context.EdgeDetected    = EdgeDetected;
-        _context.EdgePosition    = EdgePosition;
+        _context.IsGrounded = IsGrounded;
+        _context.TouchesWall = TouchesWall;
+        _context.EdgeDetected = EdgeDetected;
+        _context.EdgePosition = EdgePosition;
         _context.FacingDirection = FacingDirection;
 
         if (_context.IsGrounded)
@@ -140,8 +141,8 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         else if (Mathf.Abs(_context.AimInput.y) > 0.1f)
         {
             _currentAimAngle += -_context.AimInput.y * AimSpeed * Time.deltaTime;
-            _currentAimAngle  = Mathf.Clamp(_currentAimAngle, -20f, 20f);
-            _aimResetTimer    = AimResetDelay;
+            _currentAimAngle = Mathf.Clamp(_currentAimAngle, -20f, 20f);
+            _aimResetTimer = AimResetDelay;
         }
         else
         {
@@ -181,8 +182,8 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
             : Quaternion.Euler(0, -90, 0);
 
         _context.FacingDirection = _context.MoveInput.x > 0f ? 1 : -1;
-        FacingDirection          = _context.FacingDirection;
-        _context.TurnTimer       = 0f;
+        FacingDirection = _context.FacingDirection;
+        _context.TurnTimer = 0f;
 
         if (FrontCheck != null)
         {

@@ -42,16 +42,28 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
     public override void FixedUpdateState()
     {
+        Debug.Log($"Fall FixedUpdate - MoveInput: {_ctx.MoveInput.x}, FacingDirection: {_ctx.FacingDirection}");
         if (_ctx.Rb.linearVelocity.y < 0)
         {
             _ctx.Rb.linearVelocity += Vector3.up * Physics.gravity.y
                 * (_ctx.FallMultiplier - 1f) * Time.fixedDeltaTime;
         }
 
+        bool pushingIntoWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1 && _ctx.MoveInput.x > 0)
+                            || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x < 0);
+
+        if (pushingIntoWall)
+        {
+            _ctx.Rb.linearVelocity = new Vector3(0f, _ctx.Rb.linearVelocity.y, 0f);
+            return;
+        }
+
+
+
         if (_ctx.MoveInput.x != 0)
         {
-            float targetSpeed = _ctx.FacingDirection * _ctx.RunSpeed * 0.8f;
-            float currentX    = _ctx.Rb.linearVelocity.x;
+            float targetSpeed = _ctx.FacingDirection * (_ctx.SprintHeld ? _ctx.SprintSpeed : _ctx.RunSpeed) * 0.8f;
+            float currentX = _ctx.Rb.linearVelocity.x;
 
             _ctx.Rb.linearVelocity = new Vector3(
                 Mathf.Lerp(currentX, targetSpeed, _ctx.AirAcceleration * _ctx.AirAccelerationMultiplier * Time.fixedDeltaTime),
@@ -79,6 +91,6 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
     }
 
     public override void OnTriggerEnter(Collider other) { }
-    public override void OnTriggerStay(Collider other)  { }
-    public override void OnTriggerExit(Collider other)  { }
+    public override void OnTriggerStay(Collider other) { }
+    public override void OnTriggerExit(Collider other) { }
 }
