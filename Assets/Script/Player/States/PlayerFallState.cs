@@ -50,7 +50,7 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
         if (_ctx.MoveInput.x != 0)
         {
-            float targetSpeed = _ctx.FacingDirection * _ctx.RunSpeed * 0.8f;
+            float targetSpeed = Mathf.Sign(_ctx.MoveInput.x) * _ctx.RunSpeed * 0.8f;
             float currentX    = _ctx.Rb.linearVelocity.x;
 
             _ctx.Rb.linearVelocity = new Vector3(
