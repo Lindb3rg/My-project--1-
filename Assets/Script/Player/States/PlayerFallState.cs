@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 {
     private readonly PlayerContext _ctx;
-
+    private float _currentMoveVelocity;
     private bool _canDoubleJump;
     private bool _didDoubleJump;
     public bool DidDoubleJump => _didDoubleJump;
@@ -15,10 +15,11 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
     public override void EnterState()
     {
+        _currentMoveVelocity = _ctx.GetMoveAxisVelocity();
         _canDoubleJump = true;
         _didDoubleJump = false;
         _ctx.Anim.SetBool("inAir", true);
-        Debug.Log("We entered Fall state");
+        _ctx.Anim.SetTrigger("fallTrigger");
     }
 
     public override void ExitState()
@@ -30,10 +31,10 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
     {
         if (_ctx.JumpPressed && _canDoubleJump)
         {
-            _ctx.Rb.linearVelocity = new Vector3(
-                _ctx.Rb.linearVelocity.x,
-                _ctx.DoubleJumpForce,
-                0f
+            // Double jump always goes against gravity
+            _ctx.Rb.linearVelocity = _ctx.BuildVelocity(
+                _ctx.GetMoveAxisVelocity(),
+                _ctx.DoubleJumpForce
             );
             _canDoubleJump = false;
             _didDoubleJump = true;
@@ -42,35 +43,34 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
 
     public override void FixedUpdateState()
     {
-        Debug.Log($"Fall FixedUpdate - MoveInput: {_ctx.MoveInput.x}, FacingDirection: {_ctx.FacingDirection}");
-        if (_ctx.Rb.linearVelocity.y < 0)
+        // Extra fall gravity — Physics.gravity is already in the correct direction
+        if (_ctx.GetGravityVelocity() > 0)
         {
-            _ctx.Rb.linearVelocity += Vector3.up * Physics.gravity.y
-                * (_ctx.FallMultiplier - 1f) * Time.fixedDeltaTime;
+            _ctx.Rb.linearVelocity += Physics.gravity
+                * (_ctx.FallMultiplier - 1f)
+                * Time.fixedDeltaTime;
         }
 
-        bool pushingIntoWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1 && _ctx.MoveInput.x > 0)
+        // Wall check
+        bool pushingIntoWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1  && _ctx.MoveInput.x > 0)
                             || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x < 0);
 
         if (pushingIntoWall)
         {
-            _ctx.Rb.linearVelocity = new Vector3(0f, _ctx.Rb.linearVelocity.y, 0f);
+            _currentMoveVelocity = 0f;
+            _ctx.Rb.linearVelocity = _ctx.BuildVelocity(0f, _ctx.GetAntiGravVelocity());
             return;
         }
 
-
-
+        // Nudge along movement axis
         if (_ctx.MoveInput.x != 0)
         {
-            float targetSpeed = Mathf.Sign(_ctx.MoveInput.x) * _ctx.RunSpeed * 0.8f;
-            float currentX    = _ctx.Rb.linearVelocity.x;
-
-            _ctx.Rb.linearVelocity = new Vector3(
-                Mathf.Lerp(currentX, targetSpeed, _ctx.AirAcceleration * _ctx.AirAccelerationMultiplier * Time.fixedDeltaTime),
-                _ctx.Rb.linearVelocity.y,
-                0f
-            );
+            float nudge = Mathf.Sign(_ctx.MoveInput.x) * _ctx.JumpHorizontalSpeed * 0.5f;
+            _currentMoveVelocity += nudge * Time.fixedDeltaTime;
+            _currentMoveVelocity  = Mathf.Clamp(_currentMoveVelocity, -_ctx.JumpHorizontalSpeed, _ctx.JumpHorizontalSpeed);
         }
+
+        _ctx.Rb.linearVelocity = _ctx.BuildVelocity(_currentMoveVelocity, _ctx.GetAntiGravVelocity());
     }
 
     public override void LateUpdateState() { }
@@ -80,7 +80,8 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
         if (_ctx.TouchesWall && _ctx.EdgeDetected)
             return PlayerStateMachine.EPlayerState.EdgeClimb;
 
-        if (_ctx.IsGrounded && _ctx.Rb.linearVelocity.y >= -0.1f)
+        // Grounded and not moving fast toward gravity (avoid false positives)
+        if (_ctx.IsGrounded && _ctx.GetGravityVelocity() <= 0.1f)
             return _didDoubleJump
                 ? PlayerStateMachine.EPlayerState.Land
                 : (_ctx.MoveInput.x != 0
@@ -91,6 +92,6 @@ public class PlayerFallState : BaseState<PlayerStateMachine.EPlayerState>
     }
 
     public override void OnTriggerEnter(Collider other) { }
-    public override void OnTriggerStay(Collider other) { }
-    public override void OnTriggerExit(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }

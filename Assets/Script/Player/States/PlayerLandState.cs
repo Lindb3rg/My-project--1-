@@ -14,7 +14,7 @@ public class PlayerLandState : BaseState<PlayerStateMachine.EPlayerState>
     {
         if (_ctx.DidDoubleJump)
             _ctx.Anim.Play(PlayerAnimations.DoubleJumpLand);
-        Debug.Log("We entered Land state");
+        // Debug.Log("We entered Land state");
     }
 
     public override void ExitState() { }

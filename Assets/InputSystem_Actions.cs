@@ -181,6 +181,24 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""GravityFlip"",
+                    ""type"": ""Button"",
+                    ""id"": ""cdaae672-7f44-4b66-b93a-f28ef05623e9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""GravityFlipDirection"",
+                    ""type"": ""Value"",
+                    ""id"": ""e1141c2f-379d-4c43-bc4b-d8332250c966"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -579,6 +597,138 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""action"": ""ToggleArm"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""24d8d367-89b2-4314-bac0-237d5a2a75ed"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c44e35ee-e9fd-4b64-8d6c-bceef7579833"",
+                    ""path"": ""<DualShockGamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""9fadac46-89ec-42b1-b124-a138d556ffe2"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""caa65c97-0415-45f7-aa1c-7b825af2708b"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""fb5a4697-45ab-4455-8d7f-db1e0c5b3c38"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""5d79e30f-8038-47a7-874d-48b93909727d"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""32d5e986-2dba-468b-aa5d-d53c52595f5a"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""7b6189ed-fe7c-46c3-b9c5-b2a022d82e3d"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""673c4ed6-490b-4a3f-83d3-d28d64a89d29"",
+                    ""path"": ""<DualShockGamepad>/dpad/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""9490d651-0842-47ee-a915-5db140fb472a"",
+                    ""path"": ""<DualShockGamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""de9b49d0-1628-4c93-9ff6-073fb37e39b3"",
+                    ""path"": ""<DualShockGamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""9eec795b-ee41-46f6-8bbd-487cd7cc9969"",
+                    ""path"": ""<Gamepad>/dpad/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GravityFlipDirection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         },
@@ -1174,6 +1324,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_ToggleArm = m_Player.FindAction("ToggleArm", throwIfNotFound: true);
+        m_Player_GravityFlip = m_Player.FindAction("GravityFlip", throwIfNotFound: true);
+        m_Player_GravityFlipDirection = m_Player.FindAction("GravityFlipDirection", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1277,6 +1429,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Next;
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_ToggleArm;
+    private readonly InputAction m_Player_GravityFlip;
+    private readonly InputAction m_Player_GravityFlipDirection;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1328,6 +1482,14 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/ToggleArm".
         /// </summary>
         public InputAction @ToggleArm => m_Wrapper.m_Player_ToggleArm;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/GravityFlip".
+        /// </summary>
+        public InputAction @GravityFlip => m_Wrapper.m_Player_GravityFlip;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/GravityFlipDirection".
+        /// </summary>
+        public InputAction @GravityFlipDirection => m_Wrapper.m_Player_GravityFlipDirection;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1384,6 +1546,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @ToggleArm.started += instance.OnToggleArm;
             @ToggleArm.performed += instance.OnToggleArm;
             @ToggleArm.canceled += instance.OnToggleArm;
+            @GravityFlip.started += instance.OnGravityFlip;
+            @GravityFlip.performed += instance.OnGravityFlip;
+            @GravityFlip.canceled += instance.OnGravityFlip;
+            @GravityFlipDirection.started += instance.OnGravityFlipDirection;
+            @GravityFlipDirection.performed += instance.OnGravityFlipDirection;
+            @GravityFlipDirection.canceled += instance.OnGravityFlipDirection;
         }
 
         /// <summary>
@@ -1425,6 +1593,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @ToggleArm.started -= instance.OnToggleArm;
             @ToggleArm.performed -= instance.OnToggleArm;
             @ToggleArm.canceled -= instance.OnToggleArm;
+            @GravityFlip.started -= instance.OnGravityFlip;
+            @GravityFlip.performed -= instance.OnGravityFlip;
+            @GravityFlip.canceled -= instance.OnGravityFlip;
+            @GravityFlipDirection.started -= instance.OnGravityFlipDirection;
+            @GravityFlipDirection.performed -= instance.OnGravityFlipDirection;
+            @GravityFlipDirection.canceled -= instance.OnGravityFlipDirection;
         }
 
         /// <summary>
@@ -1795,6 +1969,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnToggleArm(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "GravityFlip" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnGravityFlip(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "GravityFlipDirection" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnGravityFlipDirection(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

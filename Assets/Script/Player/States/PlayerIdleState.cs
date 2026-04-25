@@ -13,8 +13,6 @@ public class PlayerIdleState : BaseState<PlayerStateMachine.EPlayerState>
     {
         _ctx.Anim.SetBool("inAir", false);
         _ctx.Anim.ResetTrigger("fallTrigger");
-        Debug.Log("We entered Idle state");
-
     }
 
     public override void ExitState() { }
@@ -23,13 +21,12 @@ public class PlayerIdleState : BaseState<PlayerStateMachine.EPlayerState>
     {
         if (!_ctx.IsGrounded)
             _ctx.Anim.SetTrigger("fallTrigger");
-
     }
 
     public override void FixedUpdateState()
     {
         if (Mathf.Abs(_ctx.MoveInput.x) < 0.1f)
-            _ctx.Rb.linearVelocity = new Vector3(0f, _ctx.Rb.linearVelocity.y, 0f);
+            _ctx.Rb.linearVelocity = _ctx.BuildVelocity(0f, _ctx.GetAntiGravVelocity());
     }
 
     public override void LateUpdateState() { }
@@ -39,17 +36,12 @@ public class PlayerIdleState : BaseState<PlayerStateMachine.EPlayerState>
         if (!_ctx.IsGrounded)
             return PlayerStateMachine.EPlayerState.Fall;
 
-
         if (_ctx.JumpPressed && _ctx.CoyoteTimeCounter > 0f)
-        {
-            
             return PlayerStateMachine.EPlayerState.Jump;
-        }
-
 
         if (_ctx.IsMoving())
         {
-            bool movingAwayFromWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1 && _ctx.MoveInput.x < 0)
+            bool movingAwayFromWall = (_ctx.TouchesWall && _ctx.FacingDirection == 1  && _ctx.MoveInput.x < 0)
                                    || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x > 0)
                                    || !_ctx.TouchesWall;
 
@@ -61,6 +53,6 @@ public class PlayerIdleState : BaseState<PlayerStateMachine.EPlayerState>
     }
 
     public override void OnTriggerEnter(Collider other) { }
-    public override void OnTriggerStay(Collider other) { }
-    public override void OnTriggerExit(Collider other) { }
+    public override void OnTriggerStay(Collider other)  { }
+    public override void OnTriggerExit(Collider other)  { }
 }

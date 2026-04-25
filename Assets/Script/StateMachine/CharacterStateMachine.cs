@@ -11,6 +11,11 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
     public Transform GroundCheck;
     public bool IsGrounded { get; private set; }
 
+
+    // Pivot check
+    [Header("Pivot Check")]
+    public Transform PivotCheck;
+
     // Front check
     [Header("Front Check")]
     public Transform FrontCheck;
@@ -50,10 +55,16 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
 
     private void UpdateGroundCheck()
     {
+        // Use gravity direction from GravityStateMachine if available,
+        // otherwise fall back to Vector3.down
+        Vector3 gravityDirection = GravityStateMachine.Instance != null
+            ? GravityStateMachine.Instance.GetGravityVector().normalized
+            : Vector3.down;
+
         IsGrounded = Physics.SphereCast(
             GroundCheck.position,
             GroundCheckRadius,
-            Vector3.down,
+            gravityDirection,
             out RaycastHit _,
             GroundCheckDistance,
             GroundLayer
@@ -100,9 +111,19 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
     {
         if (GroundCheck != null)
         {
-            Gizmos.color = Color.red;
+            Vector3 gravityDirection = GravityStateMachine.Instance != null
+                ? GravityStateMachine.Instance.GetGravityVector().normalized
+                : Vector3.down;
+
+            Gizmos.color = IsGrounded ? Color.green : Color.red;
             Gizmos.DrawWireSphere(GroundCheck.position, GroundCheckRadius);
-            Gizmos.DrawRay(GroundCheck.position, Vector3.down * GroundCheckDistance);
+            Gizmos.DrawRay(GroundCheck.position, gravityDirection * GroundCheckDistance);
+        }
+
+        if (PivotCheck != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(PivotCheck.position, 0.1f);
         }
 
         if (FrontCheck != null)
@@ -113,6 +134,7 @@ public abstract class CharacterStateMachine<EState> : StateManager<EState> where
             Gizmos.matrix = Matrix4x4.identity;
         }
     }
+
     protected override void FixedUpdate()
     {
         base.FixedUpdate();

@@ -6,11 +6,10 @@ public class PlayerWalkState : PlayerGroundedState
 
     public override void EnterState()
     {
-        _ctx.Anim.SetBool("inAir", false);
-        _ctx.Anim.SetBool("isWalking", true);
-        _ctx.Anim.SetBool("isRunning", false);
+        _ctx.Anim.SetBool("inAir",       false);
+        _ctx.Anim.SetBool("isWalking",   true);
+        _ctx.Anim.SetBool("isRunning",   false);
         _ctx.Anim.SetBool("isSprinting", false);
-        Debug.Log("We entered Walk state");
     }
 
     public override void ExitState()
@@ -27,16 +26,14 @@ public class PlayerWalkState : PlayerGroundedState
     {
         if (IsPushingIntoWall)
         {
-            _ctx.Rb.linearVelocity = new Vector3(0f, _ctx.Rb.linearVelocity.y, 0f);
+            ZeroMoveVelocity();
             return;
         }
 
-        _ctx.Rb.linearVelocity = new Vector3(
+        _ctx.Rb.linearVelocity = _ctx.BuildVelocity(
             _ctx.FacingDirection * _ctx.WalkSpeed,
-            _ctx.Rb.linearVelocity.y,
-            0f
+            _ctx.GetAntiGravVelocity()
         );
-        Debug.Log($"FacingDirection: {_ctx.FacingDirection}, WalkSpeed: {_ctx.WalkSpeed}, IsPushingIntoWall: {IsPushingIntoWall}");
     }
 
     public override PlayerStateMachine.EPlayerState GetNextState()

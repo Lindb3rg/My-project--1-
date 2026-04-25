@@ -13,6 +13,12 @@ public abstract class PlayerGroundedState : BaseState<PlayerStateMachine.EPlayer
         (_ctx.TouchesWall && _ctx.FacingDirection == 1  && _ctx.MoveInput.x > 0)
      || (_ctx.TouchesWall && _ctx.FacingDirection == -1 && _ctx.MoveInput.x < 0);
 
+    // Zero move axis velocity, preserve gravity axis velocity
+    protected void ZeroMoveVelocity()
+    {
+        _ctx.Rb.linearVelocity = _ctx.BuildVelocity(0f, _ctx.GetAntiGravVelocity());
+    }
+
     protected PlayerStateMachine.EPlayerState GetSharedNextState()
     {
         if (!_ctx.IsGrounded)

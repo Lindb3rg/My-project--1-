@@ -12,7 +12,8 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         Jump,
         Fall,
         Land,
-        EdgeClimb
+        EdgeClimb,
+        GravityTransition  // NEW
     }
 
     [Header("Movement")]
@@ -23,12 +24,15 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
 
     [Header("Jumping")]
     public float JumpForce = 5f;
+    public float JumpHorizontalSpeed = 8f;
     public float DoubleJumpForce = 6f;
     public float FallMultiplier = 2.5f;
     public float LowJumpMultiplier = 2f;
     public float AirAcceleration = 5f;
     public float AirAccelerationMultiplier = 1f;
     public float CoyoteTime = 0.1f;
+    public float JumpLockTimer;
+    public float JumpLockDuration = 0.15f;
 
     [Header("Edge Climbing")]
     public float ClimbRepositionThreshold = 0.05f;
@@ -65,6 +69,7 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
             transform,
             transform.Find("Ch44"),
             GroundCheck,
+            PivotCheck,
             FrontCheck,
             WalkSpeed, RunSpeed, SprintSpeed, TurnDelay,
             JumpForce, DoubleJumpForce,
@@ -76,14 +81,15 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
             ClimbRepositionSpeed
         );
 
-        States[EPlayerState.Idle] = new PlayerIdleState(EPlayerState.Idle, _context);
-        States[EPlayerState.Walk] = new PlayerWalkState(EPlayerState.Walk, _context);
-        States[EPlayerState.Run] = new PlayerRunState(EPlayerState.Run, _context);
-        States[EPlayerState.Sprint] = new PlayerSprintState(EPlayerState.Sprint, _context);
-        States[EPlayerState.Jump] = new PlayerJumpState(EPlayerState.Jump, _context);
-        States[EPlayerState.Fall] = new PlayerFallState(EPlayerState.Fall, _context);
-        States[EPlayerState.Land] = new PlayerLandState(EPlayerState.Land, _context);
-        States[EPlayerState.EdgeClimb] = new PlayerEdgeClimbState(EPlayerState.EdgeClimb, _context);
+        States[EPlayerState.Idle]             = new PlayerIdleState(EPlayerState.Idle, _context);
+        States[EPlayerState.Walk]             = new PlayerWalkState(EPlayerState.Walk, _context);
+        States[EPlayerState.Run]              = new PlayerRunState(EPlayerState.Run, _context);
+        States[EPlayerState.Sprint]           = new PlayerSprintState(EPlayerState.Sprint, _context);
+        States[EPlayerState.Jump]             = new PlayerJumpState(EPlayerState.Jump, _context);
+        States[EPlayerState.Fall]             = new PlayerFallState(EPlayerState.Fall, _context);
+        States[EPlayerState.Land]             = new PlayerLandState(EPlayerState.Land, _context);
+        States[EPlayerState.EdgeClimb]        = new PlayerEdgeClimbState(EPlayerState.EdgeClimb, _context);
+        States[EPlayerState.GravityTransition] = new PlayerGravityTransitionState(EPlayerState.GravityTransition, _context); // NEW
 
         CurrentState = States[EPlayerState.Idle];
     }
@@ -96,6 +102,7 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         ReadInput();
         SyncContext();
         HandleTurning();
+        HandleGravityFlipInput(); // NEW
         base.Update();
     }
 
@@ -104,6 +111,7 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         base.LateUpdate();
         UpdateAim();
     }
+
     private void ReadInput()
     {
         Vector2 moveInput = _input.Player.Move.ReadValue<Vector2>();
@@ -113,6 +121,8 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         _context.JumpHeld = _input.Player.Jump.IsPressed();
         _context.JumpPressed = _input.Player.Jump.WasPressedThisFrame();
         _context.SprintHeld = _input.Player.Sprint.IsPressed();
+        _context.GravityFlipPressed = _input.Player.GravityFlip.WasPressedThisFrame(); // NEW
+        _context.GravityFlipDirectionInput = _input.Player.GravityFlipDirection.ReadValue<Vector2>(); // NEW
     }
 
     private void SyncContext()
@@ -123,10 +133,78 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         _context.EdgePosition = EdgePosition;
         _context.FacingDirection = FacingDirection;
 
+        _context.JumpForce = JumpForce;
+        _context.JumpHorizontalSpeed = JumpHorizontalSpeed;
+        _context.DoubleJumpForce = DoubleJumpForce;
+        _context.FallMultiplier = FallMultiplier;
+        _context.LowJumpMultiplier = LowJumpMultiplier;
+        _context.AirAcceleration = AirAcceleration;
+        _context.AirAccelerationMultiplier = AirAccelerationMultiplier;
+        _context.CoyoteTime = CoyoteTime;
+        _context.JumpLockDuration = JumpLockDuration;
+        _context.JumpLockTimer = JumpLockTimer;
+
         if (_context.IsGrounded)
             _context.CoyoteTimeCounter = CoyoteTime;
         else
             _context.CoyoteTimeCounter -= Time.deltaTime;
+
+        SyncGravityAxes();
+    }
+
+    private void SyncGravityAxes()
+    {
+        _context.GravityDown = _context.CurrentGravityDirection switch
+        {
+            GravityDirection.Up    => Vector3.up,
+            GravityDirection.Left  => Vector3.left,
+            GravityDirection.Right => Vector3.right,
+            _                      => Vector3.down,
+        };
+        _context.GravityUp  = -_context.GravityDown;
+        _context.MoveAxis   = _context.CurrentGravityDirection switch
+        {
+            GravityDirection.Right => Vector3.up,
+            GravityDirection.Left  => Vector3.down,
+            _                      => Vector3.right,
+        };
+    }
+
+    // NEW — called from Update, sends the flip request to the world gravity system
+    private void HandleGravityFlipInput()
+    {
+        if (!_context.GravityFlipPressed) return;
+        if (GravityStateMachine.Instance == null) return;
+
+        GravityDirection targetDirection = GetGravityDirectionFromInput(_context.GravityFlipDirectionInput);
+        if (targetDirection == GravityDirection.None) return;
+
+        GravityStateMachine.Instance.RequestGravityFlip(targetDirection);
+    }
+
+    private GravityDirection GetGravityDirectionFromInput(Vector2 input)
+    {
+        if (Mathf.Abs(input.x) < 0.1f && Mathf.Abs(input.y) < 0.1f)
+            return GravityDirection.None;
+
+        // Use whichever axis has the stronger input
+        if (Mathf.Abs(input.y) >= Mathf.Abs(input.x))
+            return input.y > 0f ? GravityDirection.Up : GravityDirection.Down;
+        else
+            return input.x > 0f ? GravityDirection.Right : GravityDirection.Left;
+    }
+
+    // NEW — called by PlayerGravityListener when the world flip begins
+    public void OnGravityFlipStarted(GravityDirection newDirection)
+    {
+        _context.CurrentGravityDirection = newDirection;
+        TransitionToState(EPlayerState.GravityTransition);
+    }
+
+    // NEW — called by PlayerGravityListener when the world has settled
+    public void OnGravityFlipCompleted(GravityDirection newDirection)
+    {
+        _context.CurrentGravityDirection = newDirection;
     }
 
     private void UpdateAim()
@@ -164,7 +242,6 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
 
     public void HandleTurning()
     {
-
         bool wantsToTurn = (_context.MoveInput.x > 0f && _context.FacingDirection == -1)
                         || (_context.MoveInput.x < 0f && _context.FacingDirection == 1);
 
@@ -177,9 +254,20 @@ public class PlayerStateMachine : CharacterStateMachine<PlayerStateMachine.EPlay
         _context.TurnTimer += Time.deltaTime;
         if (_context.TurnTimer < _context.TurnDelay) return;
 
-        transform.rotation = _context.MoveInput.x > 0f
-            ? Quaternion.Euler(0, 90, 0)
-            : Quaternion.Euler(0, -90, 0);
+        float facingY = _context.MoveInput.x > 0f ? 90f : -90f;
+        Quaternion targetRotation = _context.CurrentGravityDirection switch
+        {
+            GravityDirection.Up    => Quaternion.Euler(0f,   facingY,  180f),
+            GravityDirection.Left  => _context.MoveInput.x > 0f
+                ? Quaternion.Euler( 90f, 0f, -90f)
+                : Quaternion.Euler(-90f, 0f, -90f),
+            GravityDirection.Right => _context.MoveInput.x > 0f
+                ? Quaternion.Euler(-90f, 0f,  90f)
+                : Quaternion.Euler( 90f, 0f,  90f),
+            _                      => Quaternion.Euler(0f,   facingY,    0f),
+        };
+
+        transform.rotation = targetRotation;
 
         _context.FacingDirection = _context.MoveInput.x > 0f ? 1 : -1;
         FacingDirection = _context.FacingDirection;
